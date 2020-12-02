@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+      
+        #board{
+            display: flex;
+            flex-wrap: wrap;
+            width: 306px;
+        }
+        .cell{
+            flex-shrink: 0;
+            width: 100px;
+            height:100px;
+            font-size: 40px;
+            text-align: center;
+            line-height: 100px;
+            background: lightgrey;
+            border: 1px solid #fff;
+            cursor: pointer;
+
+        }
+    </style>
+</head>
+<body>
+    <div id="board"></div>
+</body>
+<script>
+   
+    class Game {
+        constructor(dom) {
+            this.partten = [
+                [0,0,0],
+                [0,0,0],
+                [0,0,0]
+            ];
+            this.color = 1; // 1 圈圈 2 叉叉
+            this.container = dom ;
+            this.render = this.render.bind(this);
+            this.play = this.play.bind(this);
+            this.render();
+        }
+        render(){
+            let fragment = document.createDocumentFragment()
+            this.container.innerHTML= ''
+            for(let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    let currentColor = this.partten[i][j]
+                    let ele = document.createElement('div')
+                    ele.innerText = 
+                        currentColor === 1 ?
+                        '⭕' :
+                        currentColor === 2 ?
+                        '❌' :
+                        ''
+                    ele.classList.add('cell');
+                    ele.addEventListener('click',() => this.play(j,i),false);
+                    fragment.appendChild(ele);
+                }
+                fragment.appendChild(document.createElement('br'));
+
+            }
+            this.container.appendChild(fragment) 
+        }
+        play(x,y) { 
+            this.partten[y][x] = this.color;
+            if(this.checkWin()) {
+                alert(`${this.color === 1 ? '⭕' : '❌'}方获胜了`);
+
+            }
+            this.color = 3 - this.color;
+            this.render();
+        }
+        checkWin(){
+
+            for(let i = 0; i < 3; i++) {
+                let isWin = true;
+                for (let j = 0; j < 3; j++) {
+                    if (this.partten[i][j] !== this.color ){
+                        isWin = false;
+                    }
+                }
+                if(isWin) {
+                    return  true
+                }
+
+            }
+
+            for(let i = 0; i < 3; i++) {
+                let isWin = true;
+                for (let j = 0; j < 3; j++) {
+                    if (this.partten[j][i] !== this.color ){
+                        isWin = false;
+                    }
+                }
+                if(isWin) {
+                    return  true
+                }
+
+            }
+            {
+                let isWin = true;
+                for(let i = 0; i < 3; i++) {
+                    if (this.partten[i][i] !== this.color ){
+                        isWin = false;
+                    }
+
+                }
+                if(isWin) {
+                    return  true
+                }
+            }
+
+            {
+                let isWin = true;
+                for(let i = 0; i < 3; i++) {
+                    if (this.partten[i][2 - i] !== this.color ){
+                        isWin = false;
+                    }
+
+                }
+                if(isWin) {
+                    return  true
+                }
+            }
+        
+            return false
+           
+        }
+    }
+    
+    const gamesf = new Game(document.getElementById('board'));
+</script>
+</html>
