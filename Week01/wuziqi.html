@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>五子棋</title>
+    <style>
+      
+        #board{
+            display: flex;
+            flex-wrap: wrap;
+            width: 800px;
+        }
+        .cell{
+            flex-shrink: 0;
+            width: 50px;
+            height:50px;
+            font-size: 25px;
+            text-align: center;
+            line-height: 50px;
+            background: lightgrey;
+            border: 1px solid #fff;
+            cursor: pointer;
+
+        }
+    </style>
+</head>
+<body>
+    <div id="board"></div>
+</body>
+<script>
+   
+    class Game {
+        constructor(dom) {
+            this.partten = [
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            ];
+            this.color = 1; // 1 圈圈 2 叉叉
+            this.container = dom ;
+            this.render = this.render.bind(this);
+            this.play = this.play.bind(this);
+            this.findWinPoint = this.findWinPoint.bind(this);
+            this.lastPoint = []
+           // this.play = this.play.bind(this);
+            this.render();
+        }
+        render(){
+            let fragment = document.createDocumentFragment()
+            this.container.innerHTML= ''
+            for(let i = 0; i < 15; i++) {
+                for (let j = 0; j < 15; j++) {
+                    let currentColor = this.partten[i][j]
+                    let ele = document.createElement('div')
+                    ele.innerText = 
+                        currentColor === 1 ?
+                        '⭕' :
+                        currentColor === 2 ?
+                        '❌' :
+                        ''
+                    ele.classList.add('cell');
+                    ele.addEventListener('click',() => this.play(j,i),false);
+                    fragment.appendChild(ele);
+                }
+                fragment.appendChild(document.createElement('br'));
+
+            }
+            this.container.appendChild(fragment) 
+        }
+        play(x,y) { 
+            let {color,partten,deepClone,canIWin} = this;
+            this.partten[y][x] = color;
+            this.lastPoint = [y,x]
+            if(this.checkWin(partten,color,[y,x])) {
+                alert(`${color === 1 ? '⭕' : '❌'}方获胜了`);
+              //  this.reset()
+
+            }
+
+            this.color = 3 - color;
+           
+            this.render();
+           
+           // this.rebotMove();
+           // alert(canIWin(partten,this.color))
+            
+           
+        }
+
+        rebotMove() {
+            let {color,partten,deepClone,canIWin} = this;
+            let point;
+            //let rangePartten = this.getRangePartten(partten);
+            if(point = this.betstChoice(partten,color,).point) {
+                let [x,y] = point
+                this.partten[y][x] = color;
+            }
+
+            
+            this.color = 3 - color;
+           
+            this.render();
+            if(this.checkWin(partten,color,[point[1],[point[0]]])) {
+                alert(`${color === 1 ? '⭕' : '❌'}方获胜了`);
+                this.reset()
+
+            } 
+        }
+
+        deepClone(resource) {
+            return JSON.parse(JSON.stringify(resource))
+        }
+
+        getRangePartten(partten){
+            let [y,x] = this.lastPoint;
+            let minX = x - 4 >= 0 ? x - 4 : 0;
+            let maxX = x + 4 <= 14 ? x + 4 : 14;
+            let minY = y - 4 >= 0 ? y - 4 : 0;
+            let maxY = y + 4 <= 14 ? y + 4 : 14;
+            let result = [];
+            for( minY; minY < maxY; minY++) {
+                for( minX; minX < maxX; minX++) {
+                 //   result[]
+            
+                }
+            
+            }
+            
+        }
+
+        reset() {
+            let {partten} = this;
+            this.partten = partten.map(item => item.map(ele => 0 ))
+            this.render()
+        }
+
+        findWinPoint(partten,color) {
+            let [y,x] = this.lastPoint;
+            let minX = x - 4 >= 0 ? x - 4 : 0;
+            let maxX = x + 4 <= 14 ? x + 4 : 14;
+            let minY = y - 4 >= 0 ? y - 4 : 0;
+            let maxY = y + 4 <= 14 ? y + 4 : 14;
+            for(minY; minY <= maxY; minY++ ) {
+                for(minX; minX <= maxX; minX++) {
+                    if(partten[minY][minX]){
+                        continue;
+                    }
+                    let tempPartten = this.deepClone(partten)
+                    tempPartten[minY][minX] = color;
+                    if(this.checkWin(tempPartten,color,this.lastPoint)){
+                        return [minX,minY];
+                    }
+                
+                }    
+            }
+
+           
+            return null;
+        }
+
+        betstChoice(partten,color) {
+            let [y,x] = this.lastPoint;
+            let point;
+            let result = -2 ;
+            let minX = x - 4 >= 0 ? x - 4 : 0;
+            let maxX = x + 4 <= 14 ? x + 4 : 14;
+            let minY = y - 4 >= 0 ? y - 4 : 0;
+            let maxY = y + 4 <= 14 ? y + 4 : 14;
+            if(point =  this.findWinPoint(partten,color)) {
+                return {
+                    result: 1,
+                    point
+                }
+            }
+            for(minY; minY <= maxY; minY++ ) {
+                for(minX; minX <= maxX; minX++) {
+                   if(partten[minY][minX]) {
+                       continue;
+                   }
+                   let tempPartten = this.deepClone(partten);
+                   tempPartten[minY][minX] = color;
+                   let r = this.betstChoice(tempPartten, 3 - color).result;
+                   if (-r > result) {
+                       result = -r;
+                       point = [minX,minY]
+                   }
+                
+                }    
+            }
+            return {
+                point,
+                result: point ? result : 0
+            }
+        }
+
+        
+        
+
+        // 根据当前落子点，算出可赢局面的矩形区间大小
+        // 在划出来的区间内 对四种赢法分别作算法判断
+        checkWin(partten,color,point){
+            let [y,x] = point;
+           
+            { 
+                let minX = x - 4 >= 0 ? x - 4 : 0;
+                let maxX = x + 4 <= 14 ? x + 4 : 14;
+                let minY = y - 4 >= 0 ? y - 4 : 0;
+                let maxY = y + 4 <= 14 ? y + 4 : 14;
+                let winPointNum = 0;
+                for( minX; minX <= maxX; minX++) {
+
+                    
+                    if(partten[y][minX] === color) {
+                        winPointNum++;
+                        
+                    }else {
+                        winPointNum = 0;
+                    }
+
+                    if(winPointNum === 5){
+                        return true;
+                    }
+
+               
+                }
+
+
+            }
+
+            { 
+                let minX = x - 4 >= 0 ? x - 4 : 0;
+                let maxX = x + 4 <= 14 ? x + 4 : 14;
+                let minY = y - 4 >= 0 ? y - 4 : 0;
+                let maxY = y + 4 <= 14 ? y + 4 : 14;
+                let winPointNum = 0;
+                for( minY; minY <= maxY; minY++) {
+                    
+                    if(partten[minY][x] === color) {
+                        winPointNum++;
+                        
+                    }else {
+                        winPointNum = 0;
+                    }
+                    if(winPointNum === 5){
+                        return true;
+                    }
+
+               
+                }
+
+            }
+            { 
+                let minX = x - 4 >= 0 ? x - 4 : 0;
+                let maxX = x + 4 <= 14 ? x + 4 : 14;
+                let minY = y - 4 >= 0 ? y - 4 : 0;
+                let maxY = y + 4 <= 14 ? y + 4 : 14;
+                let winPointNum = 0;
+                for( minY; minY <= maxY; minY++) {
+                    
+                    if(partten[minY][minX] === color) {
+                        winPointNum++;
+                        
+                    }else {
+                        winPointNum = 0;
+                    }
+                    if(winPointNum === 5){
+                        return true;
+
+                    }
+                    if(minX < maxX) {
+                        minX++;
+                    }
+                    
+
+               
+                }
+
+            }
+
+            { 
+                let minX = x - 4 >= 0 ? x - 4 : 0;
+                let maxX = x + 4 <= 14 ? x + 4 : 14;
+                let minY = y - 4 >= 0 ? y - 4 : 0;
+                let maxY = y + 4 <= 14 ? y + 4 : 14;
+                let winPointNum = 0;
+                for( minX; minX <= maxX; minX++) {
+                    
+                    console.log(maxY,minX,maxX,partten[maxY][minX],color)
+                    if(partten[maxY][minX] === color) {
+                        winPointNum++;
+                        
+                    }else {
+                        winPointNum = 0;
+                    }
+                    if(winPointNum === 5){
+                        return true;
+                    }
+                    if(maxY > 0) {
+                        maxY--;
+                    }
+
+               
+                }
+
+            }
+
+            
+            return false
+           
+        } 
+    }
+
+
+    const gamesf = new Game(document.getElementById('board'));
+</script>
+</html>
