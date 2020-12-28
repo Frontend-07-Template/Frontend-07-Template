@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+</html>
+<script>
+    let $ = Symbol('$');
+    class Trie {
+        constructor(){
+            this.root = Object.create(null);
+        }    
+
+        insert(str) {
+            let node = this.root;
+            
+
+            for(let ele of str){
+                if(!node[ele]) {
+                    node[ele] = Object.create(null);
+                }
+                node = node[ele]
+            }
+           
+            if(!($ in node)) {
+                node[$] = 0;
+            }
+            node[$]++;
+        }
+
+
+        findMost(){
+            let max = 0;
+            let maxWord = '';
+            let visit = (node,word) => {
+                if(node[$] && node[$] > max) {
+                    max = node[$];
+                    maxWord = word;
+                }
+                
+                for(let w in node) {
+                    visit(node[w],word + w)
+                }
+            }
+            visit(this.root,'')
+            console.log(maxWord,max)
+        }
+
+        getRomdomWord(len) {
+            let word = "";
+            while(len) {
+                let temp = String.fromCharCode(Math.floor(Math.random() * 26) + 'a'.charCodeAt(0));
+                word += temp;
+                len--;
+            }
+            return word;
+        }
+
+        run(){
+            for(let i = 0 ; i < 100000; i++){
+                this.insert(this.getRomdomWord(4))
+            }
+
+
+        }
+    }
+    let trie = new Trie();
+    trie.run()
+</script>
