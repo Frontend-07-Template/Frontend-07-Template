@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+      
+        #board{
+            display: flex;
+            flex-wrap: wrap;
+            width: 306px;
+        }
+        .cell{
+            flex-shrink: 0;
+            width: 100px;
+            height:100px;
+            font-size: 40px;
+            text-align: center;
+            line-height: 100px;
+            background: lightgrey;
+            border: 1px solid #fff;
+            cursor: pointer;
+
+        }
+    </style>
+</head>
+<body>
+    <div id="board"></div>
+</body>
+<script>
+   
+    class Game {
+        constructor(dom) {
+            this.partten = [
+                [0,0,0],
+                [0,0,0],
+                [0,0,0]
+            ];
+            this.color = 1; // 1 圈圈 2 叉叉
+            this.container = dom ;
+            this.render = this.render.bind(this);
+            this.play = this.play.bind(this);
+            this.findWinPoint = this.findWinPoint.bind(this);
+           // this.play = this.play.bind(this);
+            this.render();
+        }
+        render(){
+            let fragment = document.createDocumentFragment()
+            this.container.innerHTML= ''
+            for(let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    let currentColor = this.partten[i][j]
+                    let ele = document.createElement('div')
+                    ele.innerText = 
+                        currentColor === 1 ?
+                        '⭕' :
+                        currentColor === 2 ?
+                        '❌' :
+                        ''
+                    ele.classList.add('cell');
+                    ele.addEventListener('click',() => this.play(j,i),false);
+                    fragment.appendChild(ele);
+                }
+                fragment.appendChild(document.createElement('br'));
+
+            }
+            this.container.appendChild(fragment) 
+        }
+        play(x,y) { 
+            let {color,partten,deepClone,canIWin} = this;
+            this.partten[y][x] = color;
+           
+            this.color = 3 - color;
+           
+            this.render();
+            if(this.checkWin(partten,color)) {
+                alert(`${color === 1 ? '⭕' : '❌'}方获胜了`);
+                this.reset()
+
+            }
+
+            this.rebotMove();
+           // alert(canIWin(partten,this.color))
+            
+           
+        }
+
+        rebotMove() {
+            let {color,partten,deepClone,canIWin} = this;
+            let point;
+            if(point = this.betstChoice(partten,color).point) {
+                let [x,y] = point
+                this.partten[y][x] = color;
+            }
+
+            
+            this.color = 3 - color;
+           
+            this.render();
+            if(this.checkWin(partten,color)) {
+                alert(`${color === 1 ? '⭕' : '❌'}方获胜了`);
+                this.reset()
+
+            } 
+        }
+
+        deepClone(resource) {
+            return JSON.parse(JSON.stringify(resource))
+        }
+
+        reset() {
+            let {partten} = this;
+            this.partten = partten.map(item => item.map(ele => 0 ))
+            this.render()
+        }
+
+        findWinPoint(partten,color) {
+            for(let i = 0; i < 3; i++) {
+                for(let j = 0; j < 3; j++) {
+                    if(partten[i][j]){
+                        continue;
+                    }
+                    let tempPartten = this.deepClone(partten)
+                    tempPartten[i][j] = color;
+                    if(this.checkWin(tempPartten,color)){
+                        return [j,i];
+                    }
+                
+                }    
+            }
+            return null;
+        }
+
+        betstChoice(partten,color) {
+            let point;
+            let result = -2 ;
+            if(point =  this.findWinPoint(partten,color)) {
+                return {
+                    result: 1,
+                    point
+                }
+            }
+            for(let i = 0; i < 3; i++) {
+                for(let j = 0; j < 3; j++) {
+                   if(partten[i][j]) {
+                       continue;
+                   }
+                   let tempPartten = this.deepClone(partten);
+                   tempPartten[i][j] = color;
+                   let r = this.betstChoice(tempPartten, 3 - color).result;
+                   if (-r > result) {
+                       result = -r;
+                       point = [j,i]
+                   }
+                
+                }    
+            }
+            return {
+                point,
+                result: point ? result : 0
+            }
+        }
+
+        
+
+        checkWin(partten,color){
+
+            for(let i = 0; i < 3; i++) {
+                let isWin = true;
+                for (let j = 0; j < 3; j++) {
+                    if (partten[i][j] !== color ){
+                        isWin = false;
+                    }
+                }
+                if(isWin) {
+                    return  true
+                }
+
+            }
+
+            for(let i = 0; i < 3; i++) {
+                let isWin = true;
+                for (let j = 0; j < 3; j++) {
+                    if (partten[j][i] !== color ){
+                        isWin = false;
+                    }
+                }
+                if(isWin) {
+                    return  true
+                }
+
+            }
+            {
+                let isWin = true;
+                for(let i = 0; i < 3; i++) {
+                    if (partten[i][i] !== color ){
+                        isWin = false;
+                    }
+
+                }
+                if(isWin) {
+                    return  true
+                }
+            }
+
+            {
+                let isWin = true;
+                for(let i = 0; i < 3; i++) {
+                    if (partten[i][2 - i] !== color ){
+                        isWin = false;
+                    }
+
+                }
+                if(isWin) {
+                    return  true
+                }
+            }
+        
+            return false
+           
+        } 
+    }
+
+
+    const gamesf = new Game(document.getElementById('board'));
+</script>
+</html>

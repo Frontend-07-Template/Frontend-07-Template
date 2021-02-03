@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+</html>
+<script>
+    class Kmp {
+        constructor(){
+
+        }
+        getPrefixTable(patten){
+            let i = 1, j = 0, table = new Array(patten.length).fill(0);
+            while(i < patten.length ) {
+                if(patten[i] === patten[j]) {
+                    ++i;
+                    j++;
+                    table[i] = j;
+                    
+                }else {
+                    if(j > 0) {
+                        j = table[j]
+                    }else {
+                        i++;
+                    }                }
+            }
+            return table;
+        }
+
+        isSubtr(source,patten) {
+            let prefixTable = this.getPrefixTable(patten);
+            let i = 0,j = 0;
+            while(i < source.length ) {
+                if(source[i] === patten[j]) {
+                    ++i;
+                    j++;
+                   // prefixTable[i] = j;
+                    
+                }else {
+                    if(j > 0) {
+                        j = prefixTable[j]
+                    }else {
+                        i++;
+                    }               
+                }
+                if(j === patten.length){
+                    return true
+                }
+            }
+            return false
+            
+        }
+    }
+    const kmp = new Kmp();
+    console.log(kmp.isSubtr('aabbaabbc','baab'))
+
+
+</script>

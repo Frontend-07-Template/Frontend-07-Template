@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #map{
+            display: flex;
+            flex-wrap: wrap;
+            width: 700px;
+            background: lightgrey;
+            
+        }
+        .cell{
+           
+            box-sizing: border-box;
+            width: 7px;
+            height: 7px;
+            border-right: 1px solid #fff;
+            border-bottom: 1px solid #fff;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <button onclick="save()">save</button>
+    
+    <button onclick="localStorage.removeItem('map')">clear</button>
+    <button onclick="runSearch()">运行广度搜索</button>
+</body>
+</html>
+<script>
+    class Sorted {
+        
+        constructor(data,compare){
+            this.data = [...data];
+            this.length = this.data.length;
+            this.compare = compare || ((a,b) => a-b)
+        }
+        
+        take(){
+            let {data, compare} = this;
+            let min = data[0];
+            let minIndex = 0;
+            if(!data.length) {
+                return;
+            }
+
+            for(let i = 1; i <data.length; i++) {
+                if(compare(data[i], min) < 0) {
+                    min = data[i];
+                    minIndex = i;
+                    
+                }
+            } 
+
+            data[minIndex] = data[data.length - 1];
+            data.pop();
+            return min;
+
+        }
+        
+        give(ele){
+            this.data.push(ele)
+        }
+
+
+
+
+
+
+
+    }
+
+    class JkMap {
+        constructor(id) {
+            this.container = document.getElementById(id);
+            this.map = localStorage.getItem('map') ? JSON.parse(localStorage.getItem('map')) : new Array(10000).fill(0)
+            this.draw();
+        }
+
+        draw(){
+            
+            let mouseDown,
+                clear;
+            let fragment = document.createDocumentFragment();
+            for(let i = 0; i < 100 ; i++) {
+                for (let j = 0; j < 100; j++) {
+                    let cell = document.createElement('div');
+                    cell.className = 'cell';
+                    if(this.map[i * 100 + j]){
+                        cell.style.backgroundColor = 'black';
+                    }
+                    fragment.appendChild(cell)
+                    cell.addEventListener('mousemove',() => {
+                        if(mouseDown) {
+                            if(clear) {
+                                cell.style.backgroundColor = '';
+                                this.map[i * 100 + j] = 0
+                            }else {
+                                cell.style.backgroundColor = 'black';
+                                this.map[i * 100 + j] = 1
+                            }
+                        }
+                    },false)
+                    
+                }
+               
+            }
+            document.addEventListener('mousedown',e => {
+                mouseDown = true;
+                clear = e.which === 3
+            },false)
+            document.addEventListener('mouseup',e =>{
+                mouseDown = false
+            },false)
+            document.addEventListener('contextmenu',e => e.preventDefault(),false)
+            this.container.appendChild(fragment)
+        }
+
+        
+
+        sleep(time) {
+            return new Promise((resolve,reject) => {
+                setTimeout(resolve,time)
+            })
+        }
+
+        distance([x,y] = [],[startx,starty] ,[endx,endy]) {
+            return ( x -endx) ** 2 + (  y -endy) ** 2 +  ( x -startx) ** 2 + (  y -starty) ** 2
+        }
+
+        async findThePoint(start, end) {
+            
+            let table = Object.create(this.map);
+            let queue = new Sorted([start],(a, b) => this.distance(a,start,end) - this.distance(b,start,end));
+            while(queue.length) {
+                
+                let [x,y] = queue.take();
+                //this.container.children[y *100 + x].style.backgroundColor = 'yellow'
+                if(x === end[0] && y === end[1]) {
+                //    this.container.children[y *100 + x].style.backgroundColor = 'blue'
+                    while(x !==start[0] || y !== start[1]) {
+                        await this.sleep(30);
+                        [x,y] = table[y * 100  + x];
+                        console.log(x,y)
+                        this.container.children[y *100 + x].style.backgroundColor = 'red'
+                        
+
+                    }
+                    return;
+                }
+                await this.insert(x + 1, y + 1, queue,[x,y],table);
+                await this.insert(x - 1, y + 1, queue,[x,y],table );
+                
+                await this.insert(x - 1, y - 1, queue,[x,y],table);
+                await this.insert(x + 1, y - 1, queue,[x,y],table);
+               
+                await this.insert(x + 1, y, queue,[x,y],table);
+                await this.insert(x, y + 1, queue,[x,y],table );
+                
+                await this.insert(x - 1, y, queue,[x,y],table);
+                await this.insert(x, y - 1, queue,[x,y],table);
+               
+            }
+
+        }
+
+        async insert (x, y, queue, pre, table) {
+            let currentIndex = y * 100 + x
+            if (x < 0 || x >= 100 || y < 0 || y >= 100) {
+                return;
+            }
+            if(table[currentIndex]) {
+                return;
+            }
+            await this.sleep(3);
+            table[currentIndex] = pre;
+            this.container.children[currentIndex].style.backgroundColor = 'green';
+            queue.give([x, y]);
+
+        }
+    } 
+    let myMap = new JkMap('map')
+   
+    
+
+    function runSearch(){
+        myMap.findThePoint([0,0],[50,50])
+    }
+    function save() {
+        console.log(myMap.map)
+        localStorage.setItem('map',JSON.stringify(myMap.map))
+    }
+</script>
